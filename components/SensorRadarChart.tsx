@@ -8,9 +8,16 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 interface SensorRadarChartProps {
   file: File | null;
   runAnalysisTrigger: number;
+  onVoltammetryData?: (data: VoltammetryData[]) => void; // callback to pass voltammetry data
 }
 
-const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTrigger }) => {
+interface VoltammetryData {
+  Voltage: number[];
+  Current: number[];
+  name: string;
+}
+
+const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTrigger, onVoltammetryData }) => {
   const [samples, setSamples] = useState<any[]>([]);
 
   const labels = ["pH", "Conductivity", "ORP", "Turbidity", "Temperature", "CSRR Feature"];
@@ -18,6 +25,7 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
   useEffect(() => {
     if (!file) {
       setSamples([]);
+      if (onVoltammetryData) onVoltammetryData([]);
       return;
     }
 
@@ -30,6 +38,20 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
             const sampleNameKey = Object.keys(row).find(
               (key) => key.toLowerCase() === "sampleid"
             );
+            // Parse voltammetry data if present as JSON string in a column named "Voltammetry"
+            let voltammetry: VoltammetryData | null = null;
+            if (row.Voltammetry) {
+              try {
+                const voltData = JSON.parse(row.Voltammetry);
+                voltammetry = {
+                  Voltage: voltData.Voltage,
+                  Current: voltData.Current,
+                  name: sampleNameKey ? row[sampleNameKey] : "Unknown Sample",
+                };
+              } catch {
+                voltammetry = null;
+              }
+            }
             return {
               name: sampleNameKey ? row[sampleNameKey] : "Unknown Sample",
               values: [
@@ -40,9 +62,16 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
                 parseFloat(row.Temperature),
                 parseFloat(row.CSRR_Feature),
               ],
+              voltammetry,
             };
           });
           setSamples(parsed);
+          if (onVoltammetryData) {
+              const voltDataArray = parsed
+                .map((s: { voltammetry: VoltammetryData | null }) => s.voltammetry)
+                .filter((v: VoltammetryData | null): v is VoltammetryData => v !== null);
+              onVoltammetryData(voltDataArray);
+          }
         },
       });
     } else if (file.name.endsWith(".json")) {
@@ -65,13 +94,26 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
               row.Temperature,
               row.CSRR_Feature,
             ],
+            voltammetry: row.Voltammetry
+              ? {
+                  Voltage: row.Voltammetry.Voltage,
+                  Current: row.Voltammetry.Current,
+                  name: sampleNameKey ? row[sampleNameKey] : "Unknown Sample",
+                }
+              : null,
           };
         });
         setSamples(parsed);
+        if (onVoltammetryData) {
+          const voltDataArray = parsed
+            .map((s: { voltammetry: VoltammetryData | null }) => s.voltammetry)
+            .filter((v: VoltammetryData | null): v is VoltammetryData => v !== null);
+          onVoltammetryData(voltDataArray);
+        }
       };
       reader.readAsText(file);
     }
-  }, [file, runAnalysisTrigger]);
+  }, [file, runAnalysisTrigger, onVoltammetryData]);
 
   return (
     <div className="w-full">

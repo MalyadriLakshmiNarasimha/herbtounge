@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import dynamic from "next/dynamic"
 
 // Temporarily disable ProtectedRoute to bypass authentication for testing
@@ -12,6 +12,7 @@ import { VisualizationPanel } from "@/components/live-testing/visualization-pane
 import { AIResultCard } from "@/components/live-testing/ai-result-card"
 import { ShapExplainability } from "@/components/live-testing/shap-explainability"
 import { AyurvedicRasaPanel } from "@/components/live-testing/ayurvedic-rasa-panel"
+import { VoltammetryChart } from "@/components/live-testing/voltammetry-chart"
 import { Button } from "@/components/ui/button"
 
 // Remove Voltgram button as requested
@@ -34,6 +35,12 @@ interface AIResult {
   modelVersion: string
 }
 
+interface VoltammetryData {
+  Voltage: number[]
+  Current: number[]
+  name: string
+}
+
 export default function LiveTestingPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [metadata, setMetadata] = useState<SampleMetadata>({
@@ -45,11 +52,16 @@ export default function LiveTestingPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [result, setResult] = useState<AIResult | null>(null)
   const [runAnalysisTrigger, setRunAnalysisTrigger] = useState(0)
+  const [voltammetryData, setVoltammetryData] = useState<VoltammetryData[]>([])
 
   const handleFileUpload = (file: File) => {
     setUploadedFile(file)
     setResult(null)
   }
+
+  const handleVoltammetryData = useCallback((data: VoltammetryData[]) => {
+    setVoltammetryData(data)
+  }, [])
 
   const handleAnalyze = async () => {
     if (!uploadedFile || !metadata.herbName) {
@@ -103,7 +115,8 @@ export default function LiveTestingPage() {
               <FileUploadZone onFileUpload={handleFileUpload} />
               <VisualizationPanel />
               <AIResultCard result={result} isAnalyzing={isAnalyzing} />
-              <SensorRadarChart file={uploadedFile} runAnalysisTrigger={runAnalysisTrigger} />
+              <SensorRadarChart file={uploadedFile} runAnalysisTrigger={runAnalysisTrigger} onVoltammetryData={handleVoltammetryData} />
+              <VoltammetryChart voltammetryData={voltammetryData} />
               <button
                 className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
                 onClick={() => setRunAnalysisTrigger((prev) => prev + 1)}
