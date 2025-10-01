@@ -14,6 +14,7 @@ import { ShapExplainability } from "@/components/live-testing/shap-explainabilit
 import { AyurvedicRasaPanel } from "@/components/live-testing/ayurvedic-rasa-panel"
 import { VoltammetryChart } from "@/components/live-testing/voltammetry-chart"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Remove Voltgram button as requested
 import { Sparkles } from "lucide-react"
@@ -44,8 +45,8 @@ interface VoltammetryData {
 export default function LiveTestingPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [metadata, setMetadata] = useState<SampleMetadata>({
-    herbName: "",
-    batchId: "",
+    herbName: "Ashwagandha",
+    batchId: "BATCH001",
     supplier: "",
     operator: "",
   })
@@ -54,6 +55,7 @@ export default function LiveTestingPage() {
   const [runAnalysisTrigger, setRunAnalysisTrigger] = useState(0)
   const [voltammetryData, setVoltammetryData] = useState<VoltammetryData[]>([])
   const [sensorData, setSensorData] = useState<any>(null)
+  const [selectedSample, setSelectedSample] = useState("Ashwagandha")
 
   const handleFileUpload = (file: File) => {
     setUploadedFile(file)
@@ -147,8 +149,47 @@ export default function LiveTestingPage() {
 
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
-              <FileUploadZone onFileUpload={handleFileUpload} />
-              <VisualizationPanel />
+              <div className="flex gap-4">
+                <FileUploadZone onFileUpload={handleFileUpload} />
+                <div className="flex flex-col gap-2">
+                  <Select value={selectedSample} onValueChange={setSelectedSample}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select Herb Sample" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Ashwagandha">Ashwagandha</SelectItem>
+                      <SelectItem value="Turmeric">Turmeric</SelectItem>
+                      <SelectItem value="Ginger">Ginger</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/sample-sensor-data.csv')
+                        const text = await response.text()
+                        const Papa = (await import('papaparse')).default
+                        const parsed = Papa.parse(text, { header: true })
+                        const rows = parsed.data
+                        const selectedRow = rows.find(row => row.SampleID && row.SampleID.startsWith(selectedSample))
+                        if (selectedRow) {
+                          const newCsv = Papa.unparse([selectedRow], { header: true })
+                          const blob = new Blob([newCsv], { type: 'text/csv' })
+                          const file = new File([blob], `${selectedSample}-sample.csv`, { type: 'text/csv' })
+                          handleFileUpload(file)
+                          setMetadata(prev => ({ ...prev, herbName: selectedSample }))
+                        }
+                      } catch (error) {
+                        console.error('Error loading demo sample:', error)
+                      }
+                    }}
+                    variant="outline"
+                    className="self-start"
+                  >
+                    Demo Sample
+                  </Button>
+                </div>
+              </div>
+              <VisualizationPanel sensorData={sensorData} result={result} />
               <AIResultCard result={result} isAnalyzing={isAnalyzing} />
               <SensorRadarChart file={uploadedFile} runAnalysisTrigger={runAnalysisTrigger} onVoltammetryData={handleVoltammetryData} onSensorData={handleSensorData} />
               <VoltammetryChart voltammetryData={voltammetryData} />

@@ -3,20 +3,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts"
 
-const multiSensorData = [
-  { name: "pH Sensor", value: 6.5 },
-  { name: "Conductivity Sensor", value: 120 },
-  { name: "ORP Sensor", value: 220 },
-  { name: "Turbidity Sensor", value: 15 },
-  { name: "Temperature Sensor", value: 25 },
-]
+interface VisualizationPanelProps {
+  sensorData?: any
+  result?: any
+}
 
-const rfData = Array.from({ length: 50 }, (_, i) => ({
-  frequency: 2400 + i * 10,
-  amplitude: Math.sin(i * 0.3) * 20 + 50 + Math.random() * 10,
-}))
+export function VisualizationPanel({ sensorData, result }: VisualizationPanelProps) {
+  if (!sensorData || !result) {
+    return null
+  }
 
-export function VisualizationPanel() {
+  const multiSensorData = [
+    { name: "pH Sensor", value: sensorData.pH || 0 },
+    { name: "Conductivity Sensor", value: sensorData.conductivity || 0 },
+    { name: "ORP Sensor", value: sensorData.orp || 0 },
+    { name: "Turbidity Sensor", value: sensorData.turbidity || 0 },
+    { name: "Temperature Sensor", value: sensorData.temperature || 0 },
+  ]
+
+  const rfData = Array.from({ length: 50 }, (_, i) => ({
+    frequency: 2400 + i * 10,
+    amplitude: (sensorData.rf_resonator || 50) + Math.sin(i * 0.3) * 20 + Math.random() * 10,
+  }))
   return (
     <Card className="border-border bg-card">
       <CardHeader>

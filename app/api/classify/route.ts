@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { samples_db } from '../../../lib/data';
 
 // Data models
 interface IonSelective {
@@ -34,9 +35,6 @@ interface ClassificationResponse {
   recommendation: string;
 }
 
-// In-memory storage for demo
-let samples_db: Sample[] = [];
-
 export async function POST(request: NextRequest) {
   try {
     const sample: Sample = await request.json();
@@ -46,7 +44,25 @@ export async function POST(request: NextRequest) {
     const clampedPurity = Math.max(0, Math.min(100, purity));
     const adulteration = clampedPurity < 85;
     const confidence = 0.8 + (clampedPurity / 100) * 0.2;
-    const taste = adulteration ? ["bitter", "pungent"] : ["sweet", "mild"];
+    // Enhanced taste profile logic based on pH and adulteration
+    let taste: string[] = [];
+    if (adulteration) {
+      if (sample.sensors.pH < 6) {
+        taste = ["bitter", "sour", "pungent"];
+      } else if (sample.sensors.pH >= 6 && sample.sensors.pH <= 7) {
+        taste = ["bitter", "pungent"];
+      } else {
+        taste = ["bitter", "salty"];
+      }
+    } else {
+      if (sample.sensors.pH < 6) {
+        taste = ["sweet", "sour", "mild"];
+      } else if (sample.sensors.pH >= 6 && sample.sensors.pH <= 7) {
+        taste = ["sweet", "mild"];
+      } else {
+        taste = ["sweet", "salty"];
+      }
+    }
     const recommendation = adulteration ? "Use with caution" : "Safe for Ayurvedic use";
 
     // Save sample to in-memory DB

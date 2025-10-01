@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { samples_db } from '../../../lib/data';
 
 // Data models
 interface IonSelective {
@@ -30,9 +31,6 @@ interface UploadResponse {
   uploadedSamples: number;
   invalidRows: number;
 }
-
-// In-memory storage for demo (shared with classify)
-let samples_db: Sample[] = [];
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { samples_db } from '../../../lib/data';
 
 // Data models
 interface IonSelective {
@@ -34,9 +35,6 @@ interface HistoryResponse {
   confidenceScore: number;
 }
 
-// In-memory storage for demo (shared with classify and upload)
-let samples_db: Sample[] = [];
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const sampleID = searchParams.get('sampleID');
@@ -56,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  if (results.length === 0) {
+  if (sampleID && results.length === 0) {
     return NextResponse.json({ error: 'No history found for the given sampleID' }, { status: 404 });
   }
 
