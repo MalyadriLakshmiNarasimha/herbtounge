@@ -3,13 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
-const data = [
-  { supplier: "Himalaya Herbs", authenticity: 96 },
-  { supplier: "Organic India", authenticity: 94 },
-  { supplier: "Patanjali", authenticity: 88 },
-  { supplier: "Dabur", authenticity: 92 },
-  { supplier: "Baidyanath", authenticity: 90 },
-]
+const generateData = () => {
+  const suppliers = ["Himalaya Herbs", "Organic India", "Patanjali", "Dabur", "Baidyanath", "Sri Sri Tattva", "Charak Pharma", "Zandu"]
+  const result = suppliers.map((supplier) => ({
+    supplier,
+    authenticity: Math.floor(85 + Math.random() * 15),
+  }))
+  return result
+}
+
+const data = generateData()
 
 export function SupplierChart() {
   return (

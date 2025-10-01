@@ -10,8 +10,40 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/auth-context"
 
+import { useState, useEffect } from "react"
+import { ProtectedRoute } from "@/components/auth/protected-route"
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/contexts/auth-context"
+
 export default function SettingsPage() {
   const { user } = useAuth()
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [role, setRole] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+      setRole(user.role)
+    }
+  }, [user])
+
+  const handleSave = () => {
+    setIsSaving(true)
+    // Simulate save operation
+    setTimeout(() => {
+      setIsSaving(false)
+      alert("Profile saved successfully!")
+    }, 1000)
+  }
 
   return (
     <ProtectedRoute>
@@ -37,17 +69,19 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue={user?.name} />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue={user?.email} disabled />
+                    <Input id="email" type="email" value={email} disabled />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
-                    <Input id="role" defaultValue={user?.role} disabled />
+                    <Input id="role" value={role} disabled />
                   </div>
-                  <Button>Save Changes</Button>
+                  <Button onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>

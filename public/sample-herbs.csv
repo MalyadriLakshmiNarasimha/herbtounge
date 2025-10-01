@@ -1,0 +1,4 @@
+SampleID,pH,Conductivity,ORP,Turbidity,Temperature,CSRR_Feature
+Herb_A,6.2,120,220,15,25,0.45
+Herb_B,5.8,95,180,10,25,0.52
+Adulterated_A,7.5,200,350,45,26,0.88

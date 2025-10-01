@@ -3,15 +3,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
-const data = [
-  { date: "Day 1", authentic: 92, adulterated: 8 },
-  { date: "Day 5", authentic: 88, adulterated: 12 },
-  { date: "Day 10", authentic: 94, adulterated: 6 },
-  { date: "Day 15", authentic: 90, adulterated: 10 },
-  { date: "Day 20", authentic: 95, adulterated: 5 },
-  { date: "Day 25", authentic: 91, adulterated: 9 },
-  { date: "Day 30", authentic: 93, adulterated: 7 },
-]
+import { useEffect, useState } from "react"
+
+const generateData = () => {
+  const result = []
+  for (let i = 1; i <= 30; i++) {
+    const authentic = Math.floor(85 + Math.random() * 10)
+    const adulterated = 100 - authentic
+    result.push({ date: `Day ${i}`, authentic, adulterated })
+  }
+  return result
+}
+
+const data = generateData()
 
 export function AuthenticityChart() {
   return (

@@ -99,6 +99,19 @@ export default function LoginPage() {
               </Link>
             </div>
 
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setEmail("admin@herbalauth.com")
+                setPassword("Admin@123")
+              }}
+              disabled={isLoading}
+            >
+              Demo Login
+            </Button>
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

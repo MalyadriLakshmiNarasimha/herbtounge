@@ -14,49 +14,37 @@ export interface AuthState {
   isLoading: boolean
 }
 
-// Mock users for demonstration
-const MOCK_USERS = [
-  {
-    id: "1",
-    email: "admin@herbalauth.com",
-    password: "Admin@123",
-    name: "Dr. Priya Sharma",
-    role: "admin" as const,
-  },
-  {
-    id: "2",
-    email: "analyst@herbalauth.com",
-    password: "Analyst@123",
-    name: "Rajesh Kumar",
-    role: "analyst" as const,
-  },
-  {
-    id: "3",
-    email: "viewer@herbalauth.com",
-    password: "Viewer@123",
-    name: "Anita Desai",
-    role: "viewer" as const,
-  },
-]
-
 export const login = async (email: string, password: string): Promise<User> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  console.log("Login request sent for:", email)
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
 
-  const user = MOCK_USERS.find((u) => u.email === email && u.password === password)
+    console.log("Login response status:", res.status)
+    if (!res.ok) {
+      const errorData = await res.json()
+      console.error("Login error response:", errorData)
+      throw new Error(errorData.error || "Invalid email or password")
+    }
 
-  if (!user) {
-    throw new Error("Invalid credentials")
+    const data = await res.json()
+    console.log("Login successful response data:", data)
+
+    // Store in localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("herbalauth_user", JSON.stringify(data.user))
+    }
+
+    return data.user
+  } catch (error) {
+    console.error("Login fetch error:", error)
+    throw error
   }
-
-  const { password: _, ...userWithoutPassword } = user
-
-  // Store in localStorage
-  if (typeof window !== "undefined") {
-    localStorage.setItem("herbalauth_user", JSON.stringify(userWithoutPassword))
-  }
-
-  return userWithoutPassword
 }
 
 export const signup = async (email: string, password: string, name: string): Promise<User> => {
@@ -98,8 +86,5 @@ export const resetPassword = async (email: string): Promise<void> => {
   // Simulate API call
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  const user = MOCK_USERS.find((u) => u.email === email)
-  if (!user) {
-    throw new Error("Email not found")
-  }
+  // This function is a stub and does not currently interact with backend
 }

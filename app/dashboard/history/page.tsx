@@ -20,18 +20,22 @@ interface FilterState {
   batchId: string
 }
 
-// Mock test records
-const mockRecords = Array.from({ length: 50 }, (_, i) => ({
+const herbs = ["Ashwagandha", "Turmeric", "Brahmi", "Shatavari", "Neem", "Tulsi", "Amla", "Giloy", "Guduchi", "Haritaki"]
+
+const suppliers = ["Himalaya Herbs", "Organic India", "Patanjali", "Dabur", "Baidyanath", "Sri Sri Tattva", "Charak Pharma", "Zandu"]
+
+const operators = ["Dr. Priya Sharma", "Rajesh Kumar", "Anita Desai", "Suresh Patel", "Neha Singh"]
+
+const statuses = ["authentic", "authentic", "authentic", "adulterated", "pending"] as const
+
+const mockRecords = Array.from({ length: 100 }, (_, i) => ({
   id: `test-${i + 1}`,
   batchId: `ASH-2024-${String(i + 1).padStart(3, "0")}`,
-  herb: ["Ashwagandha", "Turmeric", "Brahmi", "Shatavari"][i % 4],
-  supplier: ["Himalaya Herbs", "Organic India", "Patanjali", "Dabur"][i % 4],
+  herb: herbs[i % herbs.length],
+  supplier: suppliers[i % suppliers.length],
   purity: Math.floor(70 + Math.random() * 30),
-  status: ["authentic", "authentic", "authentic", "adulterated", "pending"][i % 5] as
-    | "authentic"
-    | "adulterated"
-    | "pending",
-  operator: ["Dr. Priya Sharma", "Rajesh Kumar", "Anita Desai"][i % 3],
+  status: statuses[i % statuses.length],
+  operator: operators[i % operators.length],
   date: new Date(2024, 0, 1 + i),
   confidence: Math.floor(85 + Math.random() * 15),
 }))
