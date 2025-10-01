@@ -12,7 +12,7 @@ interface FileUploadZoneProps {
   acceptedFormats?: string
 }
 
-export function FileUploadZone({ onFileUpload, acceptedFormats = ".csv,.json" }: FileUploadZoneProps) {
+export function FileUploadZone({ onFileUpload, acceptedFormats = ".csv,.json,.txt,.text" }: FileUploadZoneProps) {
   const [dragActive, setDragActive] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
 
@@ -78,7 +78,7 @@ export function FileUploadZone({ onFileUpload, acceptedFormats = ".csv,.json" }:
               <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-4 text-sm font-medium">Drag and drop sensor data file</p>
               <p className="mt-1 text-xs text-muted-foreground">or click to browse</p>
-              <p className="mt-2 text-xs text-muted-foreground">Supports CSV, JSON formats</p>
+              <p className="mt-2 text-xs text-muted-foreground">Supports CSV, JSON, TXT formats</p>
               <input
                 type="file"
                 className="absolute inset-0 cursor-pointer opacity-0"

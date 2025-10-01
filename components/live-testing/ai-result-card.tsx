@@ -4,12 +4,12 @@ import { Progress } from "@/components/ui/progress"
 import { CheckCircle2, AlertTriangle, Shield } from "lucide-react"
 
 interface AIResult {
-  herbDetected: string
-  purity: number
-  isAuthentic: boolean
-  confidence: number
-  ritualHash: string
-  modelVersion: string
+  herbName: string
+  purityPercent: number
+  adulterationFlag: boolean
+  confidenceScore: number
+  tasteProfile: string[]
+  recommendation: string
 }
 
 interface AIResultCardProps {
@@ -45,13 +45,16 @@ export function AIResultCard({ result, isAnalyzing }: AIResultCardProps) {
     )
   }
 
+  const isAuthentic = !result.adulterationFlag
+  const confidencePercent = Math.round(result.confidenceScore * 100)
+
   return (
-    <Card className={`border-2 ${result.isAuthentic ? "border-success" : "border-destructive"}`}>
+    <Card className={`border-2 ${isAuthentic ? "border-green-500" : "border-red-500"}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>AI Analysis Result</CardTitle>
-          <Badge variant={result.isAuthentic ? "default" : "destructive"} className="text-sm">
-            {result.isAuthentic ? (
+          <Badge variant={isAuthentic ? "default" : "destructive"} className="text-sm">
+            {isAuthentic ? (
               <>
                 <CheckCircle2 className="mr-1 h-4 w-4" />
                 Authentic
@@ -69,34 +72,43 @@ export function AIResultCard({ result, isAnalyzing }: AIResultCardProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-sm text-muted-foreground">Herb Detected</p>
-            <p className="mt-1 text-2xl font-bold">{result.herbDetected}</p>
+            <p className="mt-1 text-2xl font-bold">{result.herbName}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Purity Level</p>
-            <p className="mt-1 text-2xl font-bold">{result.purity}%</p>
+            <p className="mt-1 text-2xl font-bold">{result.purityPercent}%</p>
           </div>
         </div>
 
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Confidence Score</p>
-            <p className="text-sm font-medium">{result.confidence}%</p>
+            <p className="text-sm font-medium">{confidencePercent}%</p>
           </div>
-          <Progress value={result.confidence} className="h-2" />
+          <Progress value={confidencePercent} className="h-2" />
         </div>
 
         <div className="rounded-lg bg-secondary p-4">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Ritual AI Verification</p>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">{result.ritualHash}</p>
+              <p className="text-sm font-medium">Taste Profile</p>
+              <p className="mt-1 text-sm text-muted-foreground">{result.tasteProfile.join(", ")}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-secondary p-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">Recommendation</p>
+              <p className="mt-1 text-sm text-muted-foreground">{result.recommendation}</p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Model: {result.modelVersion}</span>
           <span>Analyzed: {new Date().toLocaleString()}</span>
         </div>
       </CardContent>

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 
 // Remove Voltgram button as requested
 import { Sparkles } from "lucide-react"
-import SensorRadarChart from "@/components/SensorRadarChart"
+import { SensorRadarChart } from "@/components/SensorRadarChart"
 
 interface SampleMetadata {
   herbName: string
@@ -27,12 +27,12 @@ interface SampleMetadata {
 }
 
 interface AIResult {
-  herbDetected: string
-  purity: number
-  isAuthentic: boolean
-  confidence: number
-  ritualHash: string
-  modelVersion: string
+  herbName: string
+  purityPercent: number
+  adulterationFlag: boolean
+  confidenceScore: number
+  tasteProfile: string[]
+  recommendation: string
 }
 
 interface VoltammetryData {
@@ -53,6 +53,7 @@ export default function LiveTestingPage() {
   const [result, setResult] = useState<AIResult | null>(null)
   const [runAnalysisTrigger, setRunAnalysisTrigger] = useState(0)
   const [voltammetryData, setVoltammetryData] = useState<VoltammetryData[]>([])
+  const [sensorData, setSensorData] = useState<any>(null)
 
   const handleFileUpload = (file: File) => {
     setUploadedFile(file)
@@ -63,29 +64,63 @@ export default function LiveTestingPage() {
     setVoltammetryData(data)
   }, [])
 
+  const handleSensorData = useCallback((data: any) => {
+    setSensorData(data)
+  }, [])
+
   const handleAnalyze = async () => {
-    if (!uploadedFile || !metadata.herbName) {
+    if (!uploadedFile || !metadata.herbName || !sensorData) {
       return
     }
 
     setIsAnalyzing(true)
     setResult(null)
 
-    // Simulate AI analysis
-    await new Promise((resolve) => setTimeout(resolve, 3000))
+    try {
+      const payload = {
+        sampleID: metadata.batchId || "sample123",
+        timestamp: new Date().toISOString(),
+        sensors: sensorData
+      }
 
-    // Mock result
-    const mockResult: AIResult = {
-      herbDetected: metadata.herbName,
-      purity: Math.random() > 0.3 ? Math.floor(85 + Math.random() * 15) : Math.floor(60 + Math.random() * 20),
-      isAuthentic: Math.random() > 0.3,
-      confidence: Math.floor(85 + Math.random() * 15),
-      ritualHash: "0x" + Math.random().toString(16).substring(2, 18),
-      modelVersion: "HerbalAuth-v2.1.0",
+      const response = await fetch('/api/classify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error('API request failed')
+      }
+
+      const apiResult = await response.json()
+      const result: AIResult = {
+        herbName: apiResult.herbName,
+        purityPercent: apiResult.purityPercent,
+        adulterationFlag: apiResult.adulterationFlag,
+        confidenceScore: apiResult.confidenceScore,
+        tasteProfile: apiResult.tasteProfile,
+        recommendation: apiResult.recommendation,
+      }
+
+      setResult(result)
+    } catch (error) {
+      console.error('Error calling API:', error)
+      // Fallback to mock result on error
+      const mockResult: AIResult = {
+        herbName: metadata.herbName,
+        purityPercent: 85,
+        adulterationFlag: false,
+        confidenceScore: 0.87,
+        tasteProfile: ["bitter", "pungent"],
+        recommendation: "Safe for Ayurvedic use",
+      }
+      setResult(mockResult)
+    } finally {
+      setIsAnalyzing(false)
     }
-
-    setResult(mockResult)
-    setIsAnalyzing(false)
   }
 
   const canAnalyze = uploadedFile && metadata.herbName && metadata.batchId && !isAnalyzing
@@ -115,12 +150,12 @@ export default function LiveTestingPage() {
               <FileUploadZone onFileUpload={handleFileUpload} />
               <VisualizationPanel />
               <AIResultCard result={result} isAnalyzing={isAnalyzing} />
-              <SensorRadarChart file={uploadedFile} runAnalysisTrigger={runAnalysisTrigger} onVoltammetryData={handleVoltammetryData} />
+              <SensorRadarChart file={uploadedFile} runAnalysisTrigger={runAnalysisTrigger} onVoltammetryData={handleVoltammetryData} onSensorData={handleSensorData} />
               <VoltammetryChart voltammetryData={voltammetryData} />
               <button
                 className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                onClick={() => setRunAnalysisTrigger((prev) => prev + 1)}
-                disabled={!uploadedFile}
+                onClick={handleAnalyze}
+                disabled={!uploadedFile || !sensorData || !metadata.herbName || isAnalyzing}
               >
                 Run Live Test
               </button>

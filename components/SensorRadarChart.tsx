@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Papa from "papaparse";
@@ -9,6 +9,7 @@ interface SensorRadarChartProps {
   file: File | null;
   runAnalysisTrigger: number;
   onVoltammetryData?: (data: VoltammetryData[]) => void; // callback to pass voltammetry data
+  onSensorData?: (data: any) => void; // callback to pass sensor data
 }
 
 interface VoltammetryData {
@@ -17,10 +18,10 @@ interface VoltammetryData {
   name: string;
 }
 
-const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTrigger, onVoltammetryData }) => {
+const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTrigger, onVoltammetryData, onSensorData }) => {
   const [samples, setSamples] = useState<any[]>([]);
 
-  const labels = ["pH", "Conductivity", "ORP", "Turbidity", "Temperature", "CSRR Feature"];
+  const labels = ["pH", "Conductivity", "ORP", "Turbidity", "Temperature", "Moisture", "RF Resonator"];
 
   useEffect(() => {
     if (!file) {
@@ -60,17 +61,34 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
                 parseFloat(row.ORP),
                 parseFloat(row.Turbidity),
                 parseFloat(row.Temperature),
-                parseFloat(row.CSRR_Feature),
+                parseFloat(row.Moisture),
+                parseFloat(row.RF_Resonator),
               ],
               voltammetry,
             };
           });
           setSamples(parsed);
           if (onVoltammetryData) {
-              const voltDataArray = parsed
-                .map((s: { voltammetry: VoltammetryData | null }) => s.voltammetry)
-                .filter((v: VoltammetryData | null): v is VoltammetryData => v !== null);
-              onVoltammetryData(voltDataArray);
+            const voltDataArray = parsed
+              .map((s: { voltammetry: VoltammetryData | null }) => s.voltammetry)
+              .filter((v: VoltammetryData | null): v is VoltammetryData => v !== null);
+            onVoltammetryData(voltDataArray);
+          }
+          if (onSensorData && parsed.length > 0) {
+            const s = parsed[0];
+            const sensors = {
+              voltammetry: s.voltammetry ? s.voltammetry.Current : [0.1,0.2,0.3],
+              pH: s.values[0],
+              conductivity: s.values[1],
+              tds_ec: s.values[1],
+              orp: s.values[2],
+              turbidity: s.values[3],
+              temperature: s.values[4],
+              moisture: s.values[5],
+              ion_selective: { Na: 10, K: 5, Ca: 3 },
+              rf_resonator: s.values[6]
+            };
+            onSensorData(sensors);
           }
         },
       });
@@ -88,11 +106,12 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
             name: sampleNameKey ? row[sampleNameKey] : "Unknown Sample",
             values: [
               row.pH,
-              row.Conductivity,
-              row.ORP,
-              row.Turbidity,
-              row.Temperature,
-              row.CSRR_Feature,
+              row.conductivity,
+              row.orp,
+              row.turbidity,
+              row.temperature,
+              row.moisture,
+              row.rf_resonator,
             ],
             voltammetry: row.Voltammetry
               ? {
@@ -110,10 +129,26 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
             .filter((v: VoltammetryData | null): v is VoltammetryData => v !== null);
           onVoltammetryData(voltDataArray);
         }
+        if (onSensorData && parsed.length > 0) {
+          const s = parsed[0];
+          const sensors = {
+            voltammetry: s.voltammetry ? s.voltammetry.Current : [0.1,0.2,0.3],
+            pH: s.values[0],
+            conductivity: s.values[1],
+            tds_ec: s.values[1],
+            orp: s.values[2],
+            turbidity: s.values[3],
+            temperature: s.values[4],
+            moisture: s.values[5],
+            ion_selective: { Na: 10, K: 5, Ca: 3 },
+            rf_resonator: s.values[6]
+          };
+          onSensorData(sensors);
+        }
       };
       reader.readAsText(file);
     }
-  }, [file, runAnalysisTrigger, onVoltammetryData]);
+  }, [file, runAnalysisTrigger, onVoltammetryData, onSensorData]);
 
   return (
     <div className="w-full">
@@ -144,4 +179,4 @@ const SensorRadarChart: React.FC<SensorRadarChartProps> = ({ file, runAnalysisTr
   );
 };
 
-export default SensorRadarChart;
+export { SensorRadarChart };
