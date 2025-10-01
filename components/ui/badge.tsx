@@ -25,22 +25,28 @@ const badgeVariants = cva(
   },
 )
 
-function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}: React.ComponentProps<'span'> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+// FIX: Convert the component to use React.forwardRef to correctly handle the 'ref' prop.
+// We use React.ComponentPropsWithoutRef<'span'> because the ref is handled by forwardRef itself.
+const Badge = React.forwardRef<
+  HTMLSpanElement, // The type of element the ref is attached to
+  React.ComponentPropsWithoutRef<'span'> &
+    VariantProps<typeof badgeVariants> & {
+      asChild?: boolean
+    }
+>(({ className, variant, asChild = false, ...props }, ref) => { // We now receive the 'ref' here
   const Comp = asChild ? Slot : 'span'
 
   return (
     <Comp
+      // Pass the forwarded 'ref' to the underlying element/Slot
+      ref={ref}
       data-slot="badge"
       className={cn(badgeVariants({ variant }), className)}
       {...props}
     />
   )
-}
+})
+
+Badge.displayName = 'Badge'
 
 export { Badge, badgeVariants }
