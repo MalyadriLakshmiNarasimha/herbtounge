@@ -1,6 +1,5 @@
 "use client"
 
-import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -59,77 +58,75 @@ export default function ReportsPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight text-balance">Reports</h1>
-              <p className="mt-2 text-muted-foreground">Generate and download comprehensive test reports</p>
-            </div>
-            <Button onClick={handleGenerateReport}>
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Report
-            </Button>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-balance">Reports</h1>
+            <p className="mt-2 text-muted-foreground">Generate and download comprehensive test reports</p>
           </div>
-
-          <div className="flex items-center gap-4">
-            <Select value={reportType} onValueChange={setReportType}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Reports</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="quarterly">Quarterly</SelectItem>
-                <SelectItem value="annual">Annual</SelectItem>
-                <SelectItem value="compliance">Compliance</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {reports.map((report) => (
-              <Card key={report.id} className="border-border bg-card">
-                <CardHeader>
-                  <CardTitle className="text-lg">{report.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{report.date}</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Type</span>
-                    <span className="font-medium">{report.type}</span>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 bg-transparent"
-                      onClick={() => handlePreview(report.id)}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Preview
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 bg-transparent"
-                      onClick={() => handleDownload(report.id)}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleShare(report.id)}>
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Button onClick={handleGenerateReport}>
+            <FileText className="mr-2 h-4 w-4" />
+            Generate Report
+          </Button>
         </div>
-      </DashboardLayout>
-    </ProtectedRoute>
+
+        <div className="flex items-center gap-4">
+          <Select value={reportType} onValueChange={setReportType}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Reports</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="quarterly">Quarterly</SelectItem>
+              <SelectItem value="annual">Annual</SelectItem>
+              <SelectItem value="compliance">Compliance</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {reports.map((report) => (
+            <Card key={report.id} className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-lg">{report.title}</CardTitle>
+                <p className="text-sm text-muted-foreground">{report.date}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Type</span>
+                  <span className="font-medium">{report.type}</span>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 bg-transparent"
+                    onClick={() => handlePreview(report.id)}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    Preview
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 bg-transparent"
+                    onClick={() => handleDownload(report.id)}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleShare(report.id)}>
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </DashboardLayout>
   )
 }

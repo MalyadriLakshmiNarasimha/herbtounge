@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { FilterPanel } from "@/components/history/filter-panel"
 import { TestHistoryTable } from "@/components/history/test-history-table"
@@ -82,59 +81,57 @@ export default function HistoryPage() {
   const paginatedRecords = filteredRecords.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage)
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight text-balance">Test History Explorer</h1>
-            <p className="mt-2 text-muted-foreground">
-              Browse and analyze past authenticity tests with advanced filtering
-            </p>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-balance">Test History Explorer</h1>
+          <p className="mt-2 text-muted-foreground">
+            Browse and analyze past authenticity tests with advanced filtering
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-4">
+          <div className="space-y-6">
+            <FilterPanel filters={filters} onFilterChange={setFilters} onReset={resetFilters} />
+            <ExportPanel />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-4">
-            <div className="space-y-6">
-              <FilterPanel filters={filters} onFilterChange={setFilters} onReset={resetFilters} />
-              <ExportPanel />
-            </div>
-
-            <div className="space-y-6 lg:col-span-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Showing {paginatedRecords.length} of {filteredRecords.length} records
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+          <div className="space-y-6 lg:col-span-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {paginatedRecords.length} of {filteredRecords.length} records
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
-
-              <TestHistoryTable records={paginatedRecords} onViewDetails={handleViewDetails} />
-
-              <SupplierReliability />
-
-              <HerbalCluster3D />
             </div>
+
+            <TestHistoryTable records={paginatedRecords} onViewDetails={handleViewDetails} />
+
+            <SupplierReliability />
+
+            <HerbalCluster3D />
           </div>
         </div>
-      </DashboardLayout>
-    </ProtectedRoute>
+      </div>
+    </DashboardLayout>
   )
 }

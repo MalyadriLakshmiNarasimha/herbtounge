@@ -1,0 +1,12 @@
+## Lab Dashboard Redesign Tasks
+- [ ] Create sensor gauge components for pH, conductivity, ORP, turbidity, temperature, moisture
+- [ ] Create history table component for last 5 tests
+- [ ] Create upload toggle component with online/offline indicator
+- [ ] Create annotation box component for notes and batch info
+- [ ] Create overlay fingerprint chart component for test vs reference comparison
+- [ ] Create data processing status component with check icons
+- [ ] Redesign app/dashboard/live-testing/page.tsx with header, 3-column grid, and UX interactions
+- [ ] Integrate dummy sensor data for live feed
+- [ ] Add loading animations and error handling
+- [ ] Ensure mobile responsiveness and Ayurvedic theme colors
+- [ ] Test all components work together and integrate with backend API

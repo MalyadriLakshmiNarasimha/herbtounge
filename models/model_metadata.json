@@ -1,0 +1,25 @@
+{
+  "herb_accuracy": 0.0,
+  "herb_classes": [
+    "Amla",
+    "Ashwagandha",
+    "Brahmi",
+    "Ginger",
+    "Moringa",
+    "Neem",
+    "Shatavari",
+    "Triphala",
+    "Tulsi",
+    "Turmeric"
+  ],
+  "features": [
+    "pH",
+    "Conductivity",
+    "ORP",
+    "Turbidity",
+    "Temperature",
+    "Moisture",
+    "RF_Resonator",
+    "voltammetry_mean"
+  ]
+}

@@ -1,4 +1,4 @@
-import { ProtectedRoute } from "@/components/auth/protected-route"
+import Link from "next/link"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { MetricCard } from "@/components/dashboard/metric-card"
 import { AuthenticityChart } from "@/components/dashboard/authenticity-chart"
@@ -8,7 +8,6 @@ import { FlaskConical, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-re
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-6">
           <div>
@@ -59,8 +58,17 @@ export default function DashboardPage() {
 
           {/* Alerts Panel */}
           <AlertsPanel />
+
+          {/* Live Analysis Navigation Button */}
+          <div className="mt-6">
+            <Link
+              href="/dashboard/live-analysis"
+              className="inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Live Analysis
+            </Link>
+          </div>
         </div>
       </DashboardLayout>
-    </ProtectedRoute>
   )
 }

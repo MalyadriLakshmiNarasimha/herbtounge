@@ -1,7 +1,19 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { type User, type AuthState, getCurrentUser, logout as authLogout } from "@/lib/auth"
+import { createContext, useContext, useState, type ReactNode } from "react"
+
+interface User {
+  id: string
+  name: string
+  email: string
+  role: "admin" | "analyst" | "viewer"
+}
+
+interface AuthState {
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+}
 
 interface AuthContextType extends AuthState {
   login: (user: User) => void
@@ -10,43 +22,28 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-  })
-
-  useEffect(() => {
-    const user = getCurrentUser()
-    setState({
-      user,
-      isAuthenticated: !!user,
-      isLoading: false,
-    })
-  }, [])
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const login = (user: User) => {
-    setState({
-      user,
-      isAuthenticated: true,
-      isLoading: false,
-    })
+    setUser(user)
   }
 
   const logout = () => {
-    authLogout()
-    setState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    })
+    setUser(null)
+  }
+
+  const state: AuthState = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
   }
 
   return <AuthContext.Provider value={{ ...state, login, logout }}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")

@@ -6,7 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { HerbalLogo } from "@/components/auth/herbal-logo"
+
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LayoutDashboard, FlaskConical, Brain, History, FileText, Settings, LogOut, Menu, X } from "lucide-react"
+import { LayoutDashboard, Brain, History, FileText, Settings, LogOut, Menu, X, Activity } from "lucide-react"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -30,8 +30,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Live Testing", href: "/dashboard/live-testing", icon: FlaskConical },
     { name: "AI Insights", href: "/dashboard/insights", icon: Brain },
+    { name: "Live Analysis", href: "/dashboard/live-analysis", icon: Activity }, // Moved Live Analysis below AI Insights
     { name: "Test History", href: "/dashboard/history", icon: History },
     { name: "Reports", href: "/dashboard/reports", icon: FileText },
     ...(user?.role === "admin" ? [{ name: "Admin", href: "/dashboard/admin", icon: Settings }] : []),
@@ -51,7 +51,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <aside className="hidden w-64 border-r border-border bg-card lg:block">
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-border px-6">
-            <HerbalLogo size="sm" />
+            <div className="text-lg font-bold">Herbal AI</div>
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto p-4">
@@ -97,7 +97,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <aside className="absolute left-0 top-0 h-full w-64 border-r border-border bg-card">
             <div className="flex h-full flex-col">
               <div className="flex h-16 items-center justify-between border-b border-border px-6">
-                <HerbalLogo size="sm" />
+                <div className="text-lg font-bold">Herbal AI</div>
                 <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>

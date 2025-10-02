@@ -16,12 +16,12 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Primary - Ayurvedic Green */
-  --primary: oklch(0.205 0 0);
+  /* Primary - Light Green (less orange, more green) */
+  --primary: oklch(0.5 0.3 120);
   --primary-foreground: oklch(0.985 0 0);
 
   /* Secondary */
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.85 0.2 120);
   --secondary-foreground: oklch(0.205 0 0);
 
   /* Muted */
@@ -64,7 +64,7 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.5 0.3 120);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);

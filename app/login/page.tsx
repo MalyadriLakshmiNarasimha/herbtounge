@@ -1,146 +1,141 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { HerbalLogo } from "@/components/auth/herbal-logo"
-import { AyurvedicPattern } from "@/components/auth/ayurvedic-pattern"
-import { useAuth } from "@/contexts/auth-context"
-import { login as authLogin } from "@/lib/auth"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { Eye, EyeOff, Leaf } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const { login } = useAuth()
+  const router = useRouter();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
 
     try {
-      const user = await authLogin(email, password)
-      login(user)
-      router.push("/dashboard")
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.detail || "Login failed");
+        return;
+      }
+
+      const data = await response.json();
+      login(data.user);
+      router.push("/dashboard");
     } catch (err) {
-      setError("Invalid email or password")
-    } finally {
-      setIsLoading(false)
+      setError("An unexpected error occurred");
     }
-  }
+  };
+
+  const handleDemoLogin = () => {
+    setEmail("admin@herbalauth.com");
+    setPassword("Admin@123");
+  };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center gradient-ayurvedic">
-      <AyurvedicPattern />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+        {/* Logo + Title */}
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <Leaf className="w-8 h-8 text-green-600" />
+          <h1 className="text-2xl font-bold text-gray-800">HerbalAuth</h1>
+        </div>
+        <p className="text-center text-sm text-gray-500 mb-6">
+          AI-Powered Authenticity
+        </p>
 
-      <div className="relative z-10 w-full max-w-md animate-fade-in px-4">
-        <div className="rounded-lg border border-border bg-card p-8 shadow-2xl">
-          <div className="mb-8 flex justify-center">
-            <HerbalLogo size="lg" />
+        {/* Welcome Text */}
+        <h2 className="text-xl font-semibold text-center mb-2">Welcome Back</h2>
+        <p className="text-center text-gray-600 mb-6">
+          Sign in to access your herbal authenticity dashboard
+        </p>
+
+        {/* Error Display */}
+        {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              placeholder="you@herbalauth.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
           </div>
 
-          <div className="mb-6 text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-balance">Welcome Back</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Sign in to access your herbal authenticity dashboard</p>
-          </div>
-
-          {error && <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@herbalauth.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={isLoading}
+                className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
               />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <Link href="/forgot-password" className="text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-
-            <Button
+          {/* Forgot Password + Demo Login */}
+          <div className="flex justify-between items-center text-sm">
+            <a href="#" className="text-green-600 hover:underline">Forgot password?</a>
+            <button
               type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setEmail("admin@herbalauth.com")
-                setPassword("Admin@123")
-              }}
-              disabled={isLoading}
+              onClick={handleDemoLogin}
+              className="text-gray-600 border px-3 py-1 rounded-lg hover:bg-gray-100"
             >
               Demo Login
-            </Button>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link href="/signup" className="text-primary hover:underline">
-              Sign up
-            </Link>
+            </button>
           </div>
 
-          <div className="mt-8 rounded-md bg-muted/50 p-4">
-            <p className="mb-2 text-xs font-semibold text-muted-foreground">Demo Credentials:</p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p>Admin: admin@herbalauth.com / Admin@123</p>
-              <p>Analyst: analyst@herbalauth.com / Analyst@123</p>
-              <p>Viewer: viewer@herbalauth.com / Viewer@123</p>
-            </div>
-          </div>
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold shadow-md"
+          >
+            Sign In
+          </button>
+        </form>
+
+        {/* Sign Up Link */}
+        <p className="text-center text-sm text-gray-600 mt-6">
+          Don’t have an account?{" "}
+          <a href="/signup" className="text-green-600 font-medium hover:underline">
+            Sign up
+          </a>
+        </p>
+
+        {/* Demo Credentials Box */}
+        <div className="bg-gray-100 p-4 rounded-lg mt-6 text-sm text-gray-700">
+          <p className="font-semibold mb-1">Demo Credentials:</p>
+          <p>Admin: admin@herbalauth.com / Admin@123</p>
+          <p>Analyst: analyst@herbalauth.com / Analyst@123</p>
+          <p>Viewer: viewer@herbalauth.com / Viewer@123</p>
         </div>
       </div>
     </div>
-  )
+  );
 }

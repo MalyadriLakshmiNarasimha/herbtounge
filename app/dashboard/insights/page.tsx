@@ -1,10 +1,10 @@
-import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { ModelPerformanceCard } from "@/components/insights/model-performance-card"
 import { HerbalCluster3D } from "@/components/insights/herbal-cluster-3d"
 import { AdvancedShapChart } from "@/components/insights/advanced-shap-chart"
 import { ModelComparison } from "@/components/insights/model-comparison"
 import { RasaDetailedPanel } from "@/components/insights/rasa-detailed-panel"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 const models = [
   {
