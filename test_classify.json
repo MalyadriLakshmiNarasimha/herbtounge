@@ -1,0 +1,18 @@
+{
+  "sampleID": "TEST_001",
+  "sensors": {
+    "voltammetry": [0.1, 0.12, 0.09],
+    "pH": 6.5,
+    "tds_ec": 210,
+    "orp": 150,
+    "turbidity": 0.2,
+    "temperature": 24.5,
+    "moisture": 10.2,
+    "ion_selective": {
+      "Na": 4.0,
+      "K": 2.8,
+      "Ca": 1.5
+    },
+    "rf_resonator": 1.95
+  }
+}

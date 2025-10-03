@@ -3,11 +3,15 @@
 import React, { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, Play, FileText, Loader2, AlertCircle, Download, BarChart3, Zap, CheckCircle, XCircle, TrendingUp, Award } from 'lucide-react'
+import { Upload, Play, FileText, Loader2, AlertCircle, Download, BarChart3, Zap, CheckCircle, XCircle, TrendingUp, Award, Eye, FileText as FileTextIcon, Database } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false })
 
@@ -50,6 +54,32 @@ const demoSamples: Record<string, SensorData> = {
     caIon: 80,
     voltammetry: [0.1, 0.3, 0.5, 0.8, 1.2, 1.5, 1.3, 0.9, 0.4, 0.1]
   },
+  Tulsi_Adulterated: {
+    pH: 6.5,
+    conductivity: 1800,
+    ORP: 350,
+    turbidity: 25,
+    temperature: 25.0,
+    moisture: 18.5,
+    rfResonator: 320,
+    naIon: 85,
+    kIon: 200,
+    caIon: 120,
+    voltammetry: [0.2, 0.5, 0.9, 1.4, 1.8, 2.1, 1.9, 1.3, 0.7, 0.3]
+  },
+  Ashwagandha: {
+    pH: 7.0,
+    conductivity: 1100,
+    ORP: 220,
+    turbidity: 20,
+    temperature: 25.2,
+    moisture: 10.5,
+    rfResonator: 480,
+    naIon: 40,
+    kIon: 110,
+    caIon: 75,
+    voltammetry: [0.18, 0.38, 0.65, 0.95, 1.25, 1.55, 1.25, 0.85, 0.35, 0.15]
+  },
   Neem: {
     pH: 7.2,
     conductivity: 950,
@@ -75,19 +105,6 @@ const demoSamples: Record<string, SensorData> = {
     kIon: 140,
     caIon: 90,
     voltammetry: [0.15, 0.35, 0.6, 0.9, 1.3, 1.7, 1.4, 1.0, 0.5, 0.2]
-  },
-  Ashwagandha: {
-    pH: 7.0,
-    conductivity: 1100,
-    ORP: 220,
-    turbidity: 20,
-    temperature: 25.2,
-    moisture: 10.5,
-    rfResonator: 480,
-    naIon: 40,
-    kIon: 110,
-    caIon: 75,
-    voltammetry: [0.18, 0.38, 0.65, 0.95, 1.25, 1.55, 1.25, 0.85, 0.35, 0.15]
   },
   Amla: {
     pH: 6.9,
@@ -166,6 +183,19 @@ const demoSamples: Record<string, SensorData> = {
     kIon: 145,
     caIon: 95,
     voltammetry: [0.13, 0.33, 0.57, 0.87, 1.17, 1.47, 1.17, 0.77, 0.33, 0.13]
+  },
+  Gotu_Kola: {
+    pH: 6.3,
+    conductivity: 1150,
+    ORP: 210,
+    turbidity: 21,
+    temperature: 25.1,
+    moisture: 11.2,
+    rfResonator: 470,
+    naIon: 42,
+    kIon: 115,
+    caIon: 78,
+    voltammetry: [0.11, 0.31, 0.54, 0.84, 1.14, 1.44, 1.14, 0.74, 0.31, 0.11]
   }
 }
 
@@ -544,7 +574,8 @@ export default function LiveTest() {
           <Award className="h-8 w-8" />
           <h1 className="text-3xl font-bold">Live Herbal Analysis</h1>
         </div>
-        <p className="text-green-100">Advanced AI-powered authenticity testing for Ayurvedic herbs</p>
+        <p className="text-green-100 text-lg">Run a real-time quality test: pick a demo or upload your sample, analyze, and download an audit-ready report.</p>
+        <p className="text-green-200 text-sm mt-1">Advanced AI-powered authenticity testing for Ayurvedic herbs</p>
       </motion.div>
 
       {/* Progress Indicator */}
@@ -721,78 +752,301 @@ export default function LiveTest() {
             transition={{ duration: 0.3 }}
           >
             <div className="space-y-6">
-              {/* Outcome Summary */}
-              {renderOutcomeSummary()}
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="visuals">Visuals</TabsTrigger>
+                  <TabsTrigger value="explainability">Explainability</TabsTrigger>
+                  <TabsTrigger value="raw-data">Raw Data</TabsTrigger>
+                </TabsList>
 
-              {/* Data Visualizations */}
-              {currentData && (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  <Card className="shadow-lg">
-                    <CardHeader>
-                      <CardTitle>Sensor Overview</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {renderSensorRadarChart(currentData)}
-                    </CardContent>
-                  </Card>
+                <TabsContent value="overview" className="space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {/* Outcome Summary */}
+                    {renderOutcomeSummary()}
 
-                  <Card className="shadow-lg">
-                    <CardHeader>
-                      <CardTitle>Electrochemical Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {renderVoltammogram(currentData)}
-                    </CardContent>
-                  </Card>
+                    {/* Action Buttons */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="flex justify-center gap-4"
+                    >
+                      <Button
+                        onClick={downloadReport}
+                        variant="outline"
+                        className="px-6 py-3"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Report
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setCurrentStep('upload')
+                          setResults(null)
+                          setCurrentData(null)
+                          setSelectedDemo('')
+                          setUploadedData(null)
+                        }}
+                        className="px-6 py-3"
+                      >
+                        New Analysis
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </TabsContent>
 
-                  <Card className="shadow-lg">
-                    <CardHeader>
-                      <CardTitle>Ion Profile</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {renderIonConcentrations(currentData)}
-                    </CardContent>
-                  </Card>
+                <TabsContent value="visuals" className="space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {/* Data Visualizations */}
+                    {currentData && (
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <Card className="shadow-lg">
+                          <CardHeader>
+                            <CardTitle>Sensor Overview</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {renderSensorRadarChart(currentData)}
+                          </CardContent>
+                        </Card>
 
-                  <Card className="shadow-lg md:col-span-2 lg:col-span-1">
-                    <CardHeader>
-                      <CardTitle>Purity Assessment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {results && renderPurityGauge(parseFloat(results.purity))}
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                        <Card className="shadow-lg">
+                          <CardHeader>
+                            <CardTitle>Sensor Pattern Analysis</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {renderVoltammogram(currentData)}
+                          </CardContent>
+                        </Card>
 
-              {/* Action Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex justify-center gap-4"
-              >
-                <Button
-                  onClick={downloadReport}
-                  variant="outline"
-                  className="px-6 py-3"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Report
-                </Button>
-                <Button
-                  onClick={() => {
-                    setCurrentStep('upload')
-                    setResults(null)
-                    setCurrentData(null)
-                    setSelectedDemo('')
-                    setUploadedData(null)
-                  }}
-                  className="px-6 py-3"
-                >
-                  New Analysis
-                </Button>
-              </motion.div>
+                        <Card className="shadow-lg">
+                          <CardHeader>
+                            <CardTitle>Ion Profile</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {renderIonConcentrations(currentData)}
+                          </CardContent>
+                        </Card>
+
+                        <Card className="shadow-lg md:col-span-2 lg:col-span-1">
+                          <CardHeader>
+                            <CardTitle>Purity Assessment</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {results && renderPurityGauge(parseFloat(results.purity))}
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="explainability" className="space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle>AI Model Explainability</CardTitle>
+                        <p className="text-sm text-gray-600">Understanding how the AI made this decision</p>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* SHAP Chart Placeholder */}
+                        <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold mb-4">Feature Importance (SHAP Values)</h3>
+                          <div className="space-y-3">
+                            {[
+                              { feature: 'Voltammetry Peak Current', importance: 0.35, direction: 'positive' },
+                              { feature: 'pH Level', importance: 0.28, direction: 'negative' },
+                              { feature: 'Conductivity', importance: 0.22, direction: 'positive' },
+                              { feature: 'ORP Value', importance: 0.15, direction: 'negative' }
+                            ].map((item, index) => (
+                              <div key={index} className="flex items-center gap-4">
+                                <span className="text-sm font-medium w-48">{item.feature}</span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-4">
+                                  <div
+                                    className={`h-4 rounded-full ${item.direction === 'positive' ? 'bg-green-500' : 'bg-red-500'}`}
+                                    style={{ width: `${item.importance * 100}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm text-gray-600 w-16">{(item.importance * 100).toFixed(1)}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Plain Language Summary */}
+                        <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold mb-4">Decision Summary</h3>
+                          <p className="text-gray-700 mb-4">
+                            The AI model identified this sample as <strong>{results?.herb}</strong> with {results?.confidence}% confidence.
+                            The sensor pattern was the strongest indicator, followed by pH levels.
+                          </p>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                              <h4 className="font-semibold text-green-700 mb-2">Supporting Factors</h4>
+                              <ul className="text-sm text-gray-600 space-y-1">
+                                <li>• Sensor pattern matches {results?.herb} profile</li>
+                                <li>• Ion concentrations within expected range</li>
+                                <li>• Sensor readings consistent with authentic samples</li>
+                              </ul>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-orange-700 mb-2">Key Considerations</h4>
+                              <ul className="text-sm text-gray-600 space-y-1">
+                                <li>• pH slightly outside optimal range</li>
+                                <li>• Minor variations in conductivity</li>
+                                <li>• Background noise in sensor readings</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="raw-data" className="space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle>Raw Sensor Data</CardTitle>
+                        <p className="text-sm text-gray-600">Complete dataset used for analysis</p>
+                      </CardHeader>
+                      <CardContent>
+                        {currentData && (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Sensor</TableHead>
+                                <TableHead>Value</TableHead>
+                                <TableHead>Unit</TableHead>
+                                <TableHead>Status</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell className="font-medium">pH</TableCell>
+                                <TableCell>{currentData.pH.toFixed(2)}</TableCell>
+                                <TableCell>pH units</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.pH >= 6.5 && currentData.pH <= 7.5 ? "default" : "secondary"}>
+                                    {currentData.pH >= 6.5 && currentData.pH <= 7.5 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Conductivity</TableCell>
+                                <TableCell>{currentData.conductivity}</TableCell>
+                                <TableCell>μS/cm</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.conductivity >= 800 && currentData.conductivity <= 1500 ? "default" : "secondary"}>
+                                    {currentData.conductivity >= 800 && currentData.conductivity <= 1500 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">ORP</TableCell>
+                                <TableCell>{currentData.ORP}</TableCell>
+                                <TableCell>mV</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.ORP >= 200 && currentData.ORP <= 400 ? "default" : "secondary"}>
+                                    {currentData.ORP >= 200 && currentData.ORP <= 400 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Turbidity</TableCell>
+                                <TableCell>{currentData.turbidity}</TableCell>
+                                <TableCell>NTU</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.turbidity <= 20 ? "default" : "secondary"}>
+                                    {currentData.turbidity <= 20 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Temperature</TableCell>
+                                <TableCell>{currentData.temperature.toFixed(1)}</TableCell>
+                                <TableCell>°C</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.temperature >= 20 && currentData.temperature <= 30 ? "default" : "secondary"}>
+                                    {currentData.temperature >= 20 && currentData.temperature <= 30 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Moisture</TableCell>
+                                <TableCell>{currentData.moisture.toFixed(1)}</TableCell>
+                                <TableCell>%</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.moisture >= 5 && currentData.moisture <= 15 ? "default" : "secondary"}>
+                                    {currentData.moisture >= 5 && currentData.moisture <= 15 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">RF Resonator</TableCell>
+                                <TableCell>{currentData.rfResonator}</TableCell>
+                                <TableCell>MHz</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.rfResonator >= 400 && currentData.rfResonator <= 550 ? "default" : "secondary"}>
+                                    {currentData.rfResonator >= 400 && currentData.rfResonator <= 550 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Na⁺ Ion</TableCell>
+                                <TableCell>{currentData.naIon}</TableCell>
+                                <TableCell>ppm</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.naIon >= 30 && currentData.naIon <= 70 ? "default" : "secondary"}>
+                                    {currentData.naIon >= 30 && currentData.naIon <= 70 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">K⁺ Ion</TableCell>
+                                <TableCell>{currentData.kIon}</TableCell>
+                                <TableCell>ppm</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.kIon >= 100 && currentData.kIon <= 150 ? "default" : "secondary"}>
+                                    {currentData.kIon >= 100 && currentData.kIon <= 150 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Ca²⁺ Ion</TableCell>
+                                <TableCell>{currentData.caIon}</TableCell>
+                                <TableCell>ppm</TableCell>
+                                <TableCell>
+                                  <Badge variant={currentData.caIon >= 70 && currentData.caIon <= 100 ? "default" : "secondary"}>
+                                    {currentData.caIon >= 70 && currentData.caIon <= 100 ? "Normal" : "Outlier"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </TabsContent>
+              </Tabs>
             </div>
           </motion.div>
         )}

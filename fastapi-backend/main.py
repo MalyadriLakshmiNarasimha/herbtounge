@@ -163,14 +163,14 @@ class SensorData(BaseModel):
 
 class Sample(BaseModel):
     sampleID: str
-    timestamp: datetime
+    timestamp: Optional[datetime] = None
     sensors: SensorData
 
 class ClassificationResponse(BaseModel):
     herbName: str
     purityPercent: float
     adulterationFlag: bool
-    confidenceScore: float
+    confidence: float
     tasteProfile: List[str]
     recommendation: str
 
@@ -232,6 +232,7 @@ def login(request: LoginRequest = Body(...), db: Session = Depends(get_db)):
 
 @app.post("/api/classify", response_model=ClassificationResponse)
 def classify(sample: Sample, db: Session = Depends(get_db)):
+    # Note: Authentication removed for demo purposes
     # Use ML models for classification if available
     if herb_clf and herb_scaler and label_encoder and adulteration_clf and adulteration_scaler:
         # Prepare features for ML models
